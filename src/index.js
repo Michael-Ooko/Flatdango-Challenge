@@ -2,13 +2,16 @@ document.addEventListener("DOMContentLoaded", function() {
     // Base URL
     const baseURL = 'http://localhost:3000';
 
+    // Define a global variable to store the current ticket count
+    let currentTicketCount = 0;
+
     // Fetch film details 
     function fetchFilmDetails() {
         // Fetch film details for first movie
         fetch(`${baseURL}/films/1`)
             .then(response => response.json())
             .then(film => {
-                // Update poster, title, runtime, showtime, available tickets
+                // Update poster, title, runtime, showtime, available tickets, and film description
                 updateFilmDetails(film);
             })
             .catch(error => console.error('Error fetching film details:', error));
@@ -18,12 +21,6 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(response => response.json())
             .then(films => {
                 const filmMenu = document.getElementById('films');
-                // Remove placeholder list item
-                const placeholderItem = filmMenu.querySelector('.film.item');
-                if (placeholderItem) {
-                    filmMenu.removeChild(placeholderItem);
-                }
-                // Populate films menu
                 films.forEach(film => {
                     const filmItem = document.createElement('li');
                     filmItem.classList.add('film', 'item');
@@ -56,8 +53,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Calculate available tickets
         const availableTickets = film.capacity - film.tickets_sold;
+        currentTicketCount = availableTickets; // Update the current ticket count
         const ticketNum = document.getElementById('ticket-num');
-        ticketNum.textContent = availableTickets;
+        ticketNum.textContent = currentTicketCount;
+
+        // Update film info
+        const filmInfo = document.getElementById('film-info');
+        filmInfo.textContent = film.description;
 
         // Add event listener to "Buy Ticket" button
         const buyTicketButton = document.getElementById('buy-ticket');
@@ -66,14 +68,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Buying a ticket
     function buyTicket(film) {
-        // Calculate available tickets
-        const availableTickets = film.capacity - film.tickets_sold;
-        if (availableTickets > 0) {
+        if (currentTicketCount > 0) {
             // Update tickets sold count
             film.tickets_sold++;
             // Update number of available tickets
+            currentTicketCount--;
             const ticketNum = document.getElementById('ticket-num');
-            ticketNum.textContent = availableTickets - 1; // Decrease available tickets by 1
+            ticketNum.textContent = currentTicketCount;
         } else {
             // Alert the user that tickets are sold out
             alert('SOLD OUT!! Try next time.');
